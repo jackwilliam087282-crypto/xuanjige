@@ -1,0 +1,32 @@
+
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./vendor/lunar'),require('./bazi-core'));else root.NatalStars=factory(root,root.BaziCore);})(typeof globalThis!=='undefined'?globalThis:this,function(lib,core){
+'use strict';
+const layout=[4,9,2,3,5,7,8,1,6],fly=[5,6,7,8,9,1,2,3,4];
+const palace={1:['坎','北','水','信息、流动与沟通'],2:['坤','西南','土','承接、协作与稳定'],3:['震','东','木','启动、行动与推进'],4:['巽','东南','木','交流、学习与协调'],5:['中','中宫','土','统筹、缓冲与平衡'],6:['乾','西北','金','决策、规则与权限'],7:['兑','西','金','表达、谈判与反馈'],8:['艮','东北','土','积累、收尾与边界'],9:['离','南','火','呈现、识别与关注']};
+const hints=['','先核实信息，再考虑如何流动与协作。','把基础安排做稳，谈清谁承接、谁负责。','有想法先试一小步，避免一急就争。','将复杂要求说清楚，耐心做沟通和学习。','给变化留缓冲，重要决定不要赶着拍板。','明确权限和规则，少用强硬态度代替协商。','沟通可以直接，承诺和费用要留下记录。','先收好已有成果，确定边界再继续推进。','展示成果也核实细节，别只看表面热闹。'];
+const sheng={木:'火',火:'土',土:'金',金:'水',水:'木'},ke={木:'土',土:'水',水:'火',火:'金',金:'木'};
+function relation(a,b){return a===b?'同气':sheng[a]===b?'宫生星':sheng[b]===a?'星生宫':ke[a]===b?'宫克星':'星克宫';}
+function build(birth,qm){
+if(!birth)return null;
+const h=Number(birth.hour),unknownHour=birth.hour==null||birth.hour===''||!Number.isFinite(h)||h<0||birth.unknownHour===true;
+const s=lib.Solar.fromYmdHms(+birth.year,+birth.month,+birth.day,unknownHour?12:Number(birth.exactHour??h),Number(birth.minute??30),0),l=s.getLunar(),center=l.getYearNineStar(3).getIndex()+1,bz=unknownHour?{dayWuXing:'待确认',yongshen:{xi:[],ji:[]}}:core.calcBazi(Object.assign({},birth,{hour:h}));
+const at=(hour,minute)=>lib.Solar.fromYmdHms(+birth.year,+birth.month,+birth.day,hour,minute,0).getLunar().getYearNineStar(3).getIndex()+1;
+const early=unknownHour?at(0,0):center,late=unknownHour?at(23,59):center,ambiguous=early!==late,alternateCenter=ambiguous?(center===early?late:early):null;
+const uncertainty=ambiguous?'出生时辰未知，且出生日期正逢立春：出生年九星有两种候选，需确认出生时刻才能定盘。下列宫位同时列出两种候选落星。':unknownHour?'出生时辰未知；这一天不跨立春年界，出生年九星仍可确定。完整八字喜忌暂不合参。':'';
+const li=l.getJieQiTable()['立春'],before=s.toYmdHms()<li.toYmdHms(),year=+birth.year-(before?1:0);
+const list=layout.map(num=>{const starNum=(center-1+fly.indexOf(num))%9+1,st=lib.NineStar.fromIndex(starNum-1),p=palace[num],starElement=st.getWuXing(),pair=(qm&&qm.palaces||[]).find(x=>+x.number===num);
+const xi=(bz.yongshen.xi||[]).includes(p[2]),ji=(bz.yongshen.ji||[]).includes(p[2]);
+return{num,gua:p[0],direction:p[1],element:p[2],topic:p[3],starNum,star:st.getNumber()+st.getColor()+starElement+' · '+st.getNameInXuanKong(),starElement,relation:relation(p[2],starElement),alternateStar:alternateCenter?(()=>{const st=lib.NineStar.fromIndex((alternateCenter-1+fly.indexOf(num))%9);return st.getNumber()+st.getColor()+st.getWuXing()+' · '+st.getNameInXuanKong();})():null,dayRelation:unknownHour?'待确认':relation(p[2],bz.dayWuXing),use:unknownHour?'时辰未知，暂不合参完整八字喜忌':xi?'宫五行列入本盘喜用参考':ji?'宫五行列入本盘忌项参考':'宫五行未列入本盘喜忌项',qimen:pair?{star:pair.star,door:pair.door,god:pair.god}:null,advice:hints[starNum]};});
+return{center,year,unknownHour,ambiguous,alternateCenter,uncertainty,yearGanZhi:l.getYearInGanZhiExact(),liChun:li.toYmdHms(),beforeLiChun:before,dayElement:bz.dayWuXing,list,source:'出生年九星采用历法库计算，按精确立春换年；中宫起星，按中→乾→兑→艮→离→坎→坤→震→巽顺飞。'};
+}
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function detail(m,p){return p.gua+p.num+'宫 · '+p.direction+'\n本宫五行：'+p.element+'；落星：'+p.star+(p.alternateStar?'；另一候选：'+p.alternateStar:'')+'。\n星宫关系：'+p.relation+'，这里描述五行方向，不直接断现实吉凶。\n出生八字日主：'+m.dayElement+'；宫与日主关系：'+p.dayRelation.replace(/星/g,'日主')+'。'+p.use+'。\n方位取象：'+p.topic+'。大白话提醒：'+p.advice+'\n'+(p.qimen?'同方位奇门记录：'+[p.qimen.star,p.qimen.door,p.qimen.god].filter(Boolean).join(' · ')+'。这是起盘时刻的另一模型，不能把它与出生年九星认作同一颗星。':'本宫没有已保存的时家奇门记录。')+'\n'+m.uncertainty+'\n计算依据：出生年'+m.year+'（'+m.yearGanZhi+'），'+m.center+'星入中；'+m.source+'\n这张盘展示出生年九星与八字五行的并列参考，不是房屋玄空运盘，也不是本次报数占卜。';}
+function html(birth,qm){
+try{const m=build(birth,qm);if(!m)return'';return '<section class="chart-fact natal-stars" id="natal-stars"><div class="card-title"><span>本命飞星参考 · 出生年九星盘</span><span class="card-title-line"></span></div><p class="chart-evidence">'+E((birth.name||'命主')+' · '+(m.ambiguous?'立春临界，出生年待确认':m.year+'年 '+m.yearGanZhi)+' · '+(m.ambiguous?m.center+'或'+m.alternateCenter:m.center)+'星入中')+'<br>'+E(m.uncertainty)+'<br>与上方奇门盘采用相同方位：上南下北、左东右西。两盘来源不同，点击各宫可分别核对。</p><div class="cross-nine natal-nine">'+m.list.map(p=>'<button type="button" data-natal="'+p.num+'" aria-pressed="false"><b>'+E(p.gua+p.num+' · '+p.direction)+'</b><br>'+E(p.star)+(p.alternateStar?'<br>另一候选 '+E(p.alternateStar):'')+'<br><small>'+E(p.relation+' · '+p.element+'宫')+'</small></button>').join('')+'</div><div class="natal-detail" aria-live="polite"><b>点宫查看本命星、五行关系与同方位奇门记录</b><p>九个宫位都可查看，包含中宫。选择后详情会保持展开。</p></div><details class="natal-rules"><summary>查看出生年界与飞布依据</summary><p>'+E(m.source)+'<br>'+E('出生当年立春：'+m.liChun+'；'+(m.unknownHour?m.uncertainty:'录入时刻在立春'+(m.beforeLiChun?'前，采用上一年。':'后，采用当年。')))+'<br>本命星只依据出生年，男女相同，同一出生年盘式相同是正常结果。这里的喜忌说明另取当前八字，不改变九星排列。未录入精确分钟时与四柱统一使用所填小时的30分。与玄空宅盘、八宅命卦及奇门盘不混算。</p></details></section>';}catch(e){return'<section class="chart-fact"><b>本命飞星参考暂未生成</b><p>'+E(e.message)+'</p></section>';}}
+if(typeof document!=='undefined'){
+const st=document.createElement('style');st.textContent='.natal-stars{grid-column:1/-1}.natal-nine button[aria-pressed=true]{border-color:#e4ba65;background:linear-gradient(140deg,#49341f,#142331);box-shadow:0 0 14px #d9aa4433}.natal-detail{margin-top:16px;border-left:3px solid #d4af64;background:#182136;border-radius:10px;padding:18px;color:#e3d6b5;white-space:pre-line;line-height:1.9}.natal-rules{margin-top:16px;color:#95a4b5;line-height:1.8}.natal-rules summary{cursor:pointer;color:#ddc183}.natal-nine button{min-height:112px}.natal-stars .card-title{margin-top:0}';document.head.appendChild(st);
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-natal]');if(!b)return;const host=b.closest('#natal-stars');if(!host)return;let saved;try{saved=JSON.parse(localStorage.getItem('xjg_cross_latest')||'null');}catch(_){}
+const birth=loadBirth(),qm=saved&&saved.birthKey===crossBirthKey(birth)?saved.reading.qimen:null,m=build(birth,qm),p=m.list.find(p=>p.num===+b.dataset.natal);host.querySelectorAll('[data-natal]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));host.querySelector('.natal-detail').textContent=detail(m,p);});
+}
+return{build,html,detail,relation,layout,fly};
+});

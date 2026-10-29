@@ -1,0 +1,21 @@
+* text=auto
+*.js text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.py text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.mp4 binary
+*.mp3 binary
+*.wav binary
+*.zip binary
+*.dll binary
+*.pyd binary
+*.exe binary
+*.pickle binary
+*.pkl binary

@@ -1,0 +1,1 @@
+'use strict';const {contextBridge,ipcRenderer}=require('electron');contextBridge.exposeInMainWorld('LocalAlgorithms',{run:q=>ipcRenderer.invoke('algorithm:run',q)});

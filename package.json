@@ -1,0 +1,117 @@
+{
+  "name": "xuanjige-bazi",
+  "version": "1.10.0-p2",
+  "description": "玄机阁：传统文化学习、排盘、运势参考与复盘的本地桌面应用",
+  "main": "main.js",
+  "author": "XuanJieGe",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jackwilliam087282-crypto/xuanjige.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jackwilliam087282-crypto/xuanjige/issues"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "check": "node scripts/check-project.cjs",
+    "test": "node --test tests/core.test.cjs",
+    "test:smoke": "electron tests/smoke.cjs",
+    "pack": "electron-builder --win --x64",
+    "pack:dir": "electron-builder --win --x64 --dir"
+  },
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "24.13.3",
+    "jsdom": "30.1.2"
+  },
+  "build": {
+    "appId": "com.xuanjige.bazi1010",
+    "productName": "玄机阁1.10.0-p2",
+    "copyright": "Copyright © 2026 XuanJieGe",
+    "asar": true,
+    "directories": {
+      "output": "dist",
+      "buildResources": "res"
+    },
+    "files": [
+      "**/*",
+      "!**/*.bak",
+      "!node_modules/**",
+      "!dist/**",
+      "!res/**",
+      "!asar/**",
+      "!tests/**",
+      "!tools/**",
+      "!docs/**",
+      "!shots/**",
+      "!shots18/**",
+      "!shots19/**",
+      "!shots191/**",
+      "!shots192/**",
+      "!shots19-off/**",
+      "!shots-ext/**",
+      "!shots-install/**",
+      "!shots-pack/**",
+      "!dist-inst/**",
+      "!dist-1011/**",
+      "!install-test/**",
+      "!_草稿隔离/**",
+      "!_pack-old/**",
+      "!fulu-wall/**",
+      "!dist-*/**",
+      "!_*.js",
+      "!engine/**",
+      "!scripts/**",
+      "!.github/**",
+      "!.git/**",
+      "!.build-tools/**",
+      "!_procs.txt",
+      "!_ziperr*.txt",
+      "!源码清单.txt"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico",
+      "artifactName": "玄机阁1.10.0-p2-安装包.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "玄机阁1.10.0-p2",
+      "installerLanguages": [
+        "zh_CN"
+      ],
+      "language": "2052"
+    },
+    "extraResources": [
+      {
+        "from": "engine",
+        "to": "engine",
+        "filter": [
+          "**/*",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/Scripts/**"
+        ]
+      }
+    ]
+  },
+  "allowScripts": {
+    "electron@31.7.7": true
+  }
+}

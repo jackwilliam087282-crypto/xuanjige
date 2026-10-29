@@ -1,0 +1,25 @@
+node_modules/
+dist/
+dist-*/
+coverage/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+.npmrc
+*.pem
+*.key
+*.pfx
+*.p12
+__pycache__/
+*.pyc
+/.build-tools/
+/_procs.txt
+/_ziperr*.txt
+/源码清单.txt
+/app.asar*
+/*.exe
+/release-assets/
+# Keep engine/python/python.exe and python311.zip: required offline Windows runtime.

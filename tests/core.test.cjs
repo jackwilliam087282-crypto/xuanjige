@@ -1,0 +1,10 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const core=require('../bazi-core.js'),bridge=require('../algorithm-bridge.js');
+const birth={year:1990,month:6,day:15,hour:12,gender:'male'};
+test('四柱排盘返回四个有效干支',()=>{const result=core.calcBazi(birth);assert.equal(result.pillars.length,4);for(const p of result.pillars){assert.ok(core.GAN.includes(p.gan));assert.ok(core.ZHI.includes(p.zhi))}});
+test('固定日期每日读卦稳定且索引有效',()=>{const date=new Date(2026,9,14,12);assert.deepEqual(core.getDailyGua(date),core.getDailyGua(date));assert.ok(core.getDailyGua(date).index>=0&&core.getDailyGua(date).index<64)});
+test('64天轮读覆盖64个索引',()=>{const seen=new Set();for(let i=0;i<64;i++)seen.add(core.getDailyGua(new Date(2026,0,1+i,12)).index);assert.equal(seen.size,64)});
+test('缺失或越界出生信息拒绝',()=>{assert.throws(()=>core.calcBazi(null));assert.throws(()=>core.calcBazi({...birth,year:1800}));assert.throws(()=>core.calcBazi({...birth,month:13}))});
+test('桥接拒绝未知算法和无效日期',()=>{const q={kind:'liuren',year:2026,month:10,day:14,hour:12,minute:0};assert.equal(bridge.validate(q).kind,'liuren');assert.throws(()=>bridge.validate({...q,kind:'shell'}));assert.throws(()=>bridge.validate({...q,month:2,day:30}));assert.throws(()=>bridge.validate({...q,hour:24}))});
+test('桥接仅保留白名单字段',()=>{const q=bridge.validate({kind:'taiyi',year:2026,month:10,day:14,hour:12,minute:0,command:'not-executed'});assert.equal(q.command,undefined);assert.equal(q.method,0);assert.equal(q.style,3)});
+test('Windows随附Python可运行本地六壬引擎', {skip:process.platform!=='win32',timeout:30000},async()=>{const result=await bridge.run({kind:'liuren',year:2026,month:10,day:14,hour:12,minute:0,method:0},require('path').resolve(__dirname,'../engine'));assert.equal(result['体系'],'大六壬')});
